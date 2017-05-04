@@ -287,6 +287,18 @@ export class ContractService {
     });
   }
 
+  createProposal(profitability: number) {
+    return new Promise<void>((resolve, reject) => {
+      this.contract.addProject(profitability, (err: any, data: any) => {
+        this.zone.run(() => {
+          if (err)
+            return reject(err);
+          return resolve(data);
+        })
+      })
+    });
+  }
+
   getZeroAddress(): string {
     return "0x0000000000000000000000000000000000000000";
   }

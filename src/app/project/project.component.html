@@ -1,3 +1,8 @@
-<div class="project">
-  {{project?.creator}}
+<div class="project" *ngIf="project">
+  <legend>Current project</legend>
+  <div >
+    <p><span class="name">Creator:</span> {{project.creator}}</p>
+    <p><span class="name">Profitability:</span> {{project.profitability}}%</p>
+    <p><span class="name">Amount:</span> {{project.finalAmount}}%</p>
+  </div>
 </div>

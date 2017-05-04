@@ -1,3 +1,7 @@
-<p>
-  projects works!
-</p>
+<div class="projects" *ngIf="projects?.length>0">
+  <legend>Projects</legend>
+  <div class="project" *ngFor="let project of projects">
+    <p><span class="name">Creator:</span> {{project.creator}}</p>
+    <p><span class="name">Profitability:</span>  {{project.profitability}}%</p>
+  </div>
+</div>

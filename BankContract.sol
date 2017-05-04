@@ -67,10 +67,8 @@ contract BankContract is mortal {
     
     function startProposals() isOwnerOfBank(){
         projectsAllowed = true;
-        for(uint j = 0;j< projectCreators.length;j++){
-            delete projects[creator];
-            delete projectCreators[j];
-        }
+        projects.length = 0;
+        projectsCreators.length = 0;
         delete currentProject;
         statusChange();
     }
@@ -147,13 +145,15 @@ contract BankContract is mortal {
     }
     
     function invest(uint amount,address projectCreator) isCrowdfundStarted(){
-        if(amount>0&&bakers[msg.sender].amount ==0 &&savings[msg.sender]>amount&&projects[projectCreator].creator!=address(0)){
+        if(amount>0&&bakers[msg.sender].amount ==0 &&savings[msg.sender]>=amount&&projects[projectCreator].creator!=address(0)){
             bakers[msg.sender].amount = amount;
             bakers[msg.sender].beneficiary = projectCreator;
             projects[projectCreator].investors.push(msg.sender);
             projects[projectCreator].investedAmount += amount;
             savings[msg.sender] -= amount;
             userInvested(msg.sender,projectCreator);
+        }else{
+            trow;
         }
     }
     

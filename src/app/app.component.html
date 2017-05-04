@@ -2,9 +2,11 @@
 <div (window:load)="onWindowLoad()" class="landing">
     <div class="container" *ngIf="account">
         <div class="col-lg-4 col-md-5 col-sm-6">
-        <app-money></app-money>
+            <app-money [account]="account"></app-money>
         </div>
         <div class="col-lg-8 col-md-7 col-sm-6">
+            <app-proposal [account]="account"></app-proposal>
+            <app-projects></app-projects>
             <app-project></app-project>
         </div>
     </div>

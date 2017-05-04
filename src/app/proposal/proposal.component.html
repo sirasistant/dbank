@@ -1,3 +1,19 @@
-<p>
-  proposal works!
-</p>
+<div class="proposal" *ngIf="status?.projectsAllowed">
+ 
+  <form #proposalForm="ngForm" class="form-horizontal">
+    <fieldset>
+    <legend>Create project</legend>
+    <div class="form-group">
+      <label class="control-label col-sm-4" for="profitability">Profitability (%):</label>
+      <div class="col-sm-8">
+        <input required type="number" min="1" step="1" name="profitability" [disabled]="getMyProject()" [(ngModel)]="editProject.profitability" class="form-control" placeholder="Enter percentage">
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-offset-4 col-sm-8">
+        <button type="button" (click)="create()" [disabled]="getMyProject()||!proposalForm.form.valid"  class="btn btn-default">Create</button>
+      </div>
+    </div>
+    </fieldset>
+  </form>
+</div>
