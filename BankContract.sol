@@ -126,7 +126,7 @@ contract BankContract is mortal {
     }
     
     function safeWithdraw(uint amount){
-        if(amount>0&&amount>=savings[msg.sender]){
+        if(amount>0&&amount<=savings[msg.sender]){
             savings[msg.sender]-= amount;
             if(!msg.sender.send(amount)){
                 savings[msg.sender]+= amount;
@@ -157,7 +157,7 @@ contract BankContract is mortal {
         }
     }
     
-    function finishProject(){
+    function finishProject() private{
         for(uint i = 0;i<currentProject.investors.length;i++){
             investment current = bakers[currentProject.investors[i]];
             uint amountToGive = current.amount + current.amount / 100 * currentProject.profitability;
@@ -180,6 +180,26 @@ contract BankContract is mortal {
 
     function getSavings() constant returns(uint){
         return savings[msg.sender];
+    }
+
+    function getInvestment() constant returns(uint,address){
+        return (bakers[msg.sender].amount, bakers[msg.sender].beneficiary);
+    }
+
+    function getProjectsCount() constant returns (uint){
+        return projectCreators.length;
+    }
+    
+    function getProjectCreator(uint index)constant returns (address){
+        return projectCreators[index];
+    }
+
+    function getProject(address creator) constant returns (uint,uint,uint,address){
+        return (projects[creator].finalAmount,projects[creator].investedAmount,projects[creator].profitability,projects[creator].creator);
+    }
+
+    function getCurrentProject() constant returns (uint,uint,uint,address){
+          return (currentProject.finalAmount,currentProject.investedAmount,currentProject.profitability,currentProject.creator);
     }
     
 }

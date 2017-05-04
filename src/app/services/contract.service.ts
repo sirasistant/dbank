@@ -21,47 +21,10 @@ export class ContractService {
 
   addresses = {
     main: "",
-    ropsten: "0xd81D8654F3e8d6292cc44571525e98cEac09eF29"
+    ropsten: "0xbC2b30C8469cA965a89BB0A64f0A7f4BEcC7D727"
   }
 
   constructor(private _http: Http, private zone: NgZone) {
-    if (window.web3) {
-      this.web3 = window.web3;
-      this.init().then(userAccounts => {
-        this.connectionSubject.next(new ConnectionStatus(true, null));
-        var fund = this.contract.fund({ user: userAccounts[0] });
-        fund.watch((error: any, event: any) => {
-          this.zone.run(() => {
-            this.fundSubject.next(event.args.amount);
-          });
-        });
-        var withdrawal = this.contract.withdrawal({ user: userAccounts[0] });
-        withdrawal.watch((error: any, event: any) => {
-          this.zone.run(() => {
-            this.withdrawSubject.next(event.args.amount);
-          });
-        });
-        var userInvested = this.contract.userInvested({ user: userAccounts[0] });
-        userInvested.watch((error: any, event: any) => {
-          this.zone.run(() => {
-            this.investSubject.next(event.args.beneficiary);
-          });
-        });
-        var status = this.contract.status();
-        status.watch((error: any, event: any) => {
-          var status: any = {};
-          this.getCrowdfundStarted().then(value => {
-            status.crowdFundStarted = value;
-            return this.getProjectsAllowed();
-          }).then(value => {
-            status.projectsAllowed = value;
-            this.statusSubject.next(status);
-          })
-        });
-      }).catch(error => this.connectionSubject.next(new ConnectionStatus(false, error)));
-    } else {
-      this.connectionSubject.next(new ConnectionStatus(false, "No web3"))
-    }
   }
 
   parseBytes(hex: String): number[] {
@@ -92,6 +55,53 @@ export class ContractService {
             }
           }
         });
+      })
+    });
+  }
+
+  public prepare() {
+    if (window.web3) {
+      this.web3 = window.web3;
+      this.init().then(userAccounts => {
+        this.connectionSubject.next(new ConnectionStatus(true, null));
+        var fund = this.contract.fund({ user: userAccounts[0] });
+        fund.watch((error: any, event: any) => {
+          this.zone.run(() => {
+            this.fundSubject.next(event.args.amount);
+          });
+        });
+        var withdrawal = this.contract.withdrawal({ user: userAccounts[0] });
+        withdrawal.watch((error: any, event: any) => {
+          this.zone.run(() => {
+            this.withdrawSubject.next(event.args.amount);
+          });
+        });
+        var userInvested = this.contract.userInvested({ user: userAccounts[0] });
+        userInvested.watch((error: any, event: any) => {
+          this.zone.run(() => {
+            this.investSubject.next(event.args.beneficiary);
+          });
+        });
+        var status = this.contract.statusChange();
+        status.watch((error: any, event: any) => {
+          this.updateStatus()
+        });
+        this.updateStatus();
+      }).catch(error => this.connectionSubject.next(new ConnectionStatus(false, error)));
+    } else {
+      this.connectionSubject.next(new ConnectionStatus(false, "No web3"))
+    }
+  }
+
+  private updateStatus() {
+    this.zone.run(() => {
+      var status: any = {};
+      this.getCrowdfundStarted().then(value => {
+        status.crowdfundStarted = value;
+        return this.getProjectsAllowed();
+      }).then(value => {
+        status.projectsAllowed = value;
+        this.statusSubject.next(status);
       })
     });
   }
@@ -152,9 +162,39 @@ export class ContractService {
     })
   }
 
+  toEther(wei: any): number {
+    return wei.dividedBy(Math.pow(10, 18)).toNumber();
+  }
+
+  toWei(ether: number): any {
+    return this.web3.toWei(ether);
+  }
+
+  addMoney(ether: number): Promise<void> {
+    return new Promise<void>((resolve, reject) =>
+      this.web3.eth.sendTransaction({
+        from: this.userAddresses[0],
+        to: this.contract.address,
+        value: this.toWei(ether)
+      }, (err) => {
+        if (err)
+          reject(err);
+        resolve();
+      }));
+  }
+
+  withdrawMoney(ether: number): Promise<void> {
+    return new Promise<void>((resolve, reject) =>
+      this.contract.safeWithdraw(this.toWei(ether), (err) => {
+        if (err)
+          reject(err);
+        resolve();
+      }));
+  }
+
   getSavings(): Promise<number> {
     return new Promise<number>((resolve, reject) => {
-      this.contract.getSavings((err: any, amount: any) => {
+      this.contract.savings(this.userAddresses[0], (err: any, amount: any) => {
         this.zone.run(() => {
           if (err)
             return reject(err);
@@ -162,6 +202,93 @@ export class ContractService {
         })
       })
     });
+  }
+
+  getInvestment(): Promise<Investment> {
+    return new Promise<Investment>((resolve, reject) => {
+      this.contract.getInvestment((err: any, data: any[]) => {
+        this.zone.run(() => {
+          if (err)
+            return reject(err);
+          return resolve(new Investment(data[0], data[1]));
+        })
+      })
+    });
+  }
+
+  private getProjectsCount(): Promise<number> {
+    return new Promise<number>((resolve, reject) => {
+      this.contract.getProjectsCount((err: any, data: any) => {
+        this.zone.run(() => {
+          if (err)
+            return reject(err);
+          return resolve(data.toNumber());
+        })
+      })
+    });
+  }
+
+  private getProjectCreator(index: number): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      this.contract.getProjectCreator(index, (err: any, data: any) => {
+        this.zone.run(() => {
+          if (err)
+            return reject(err);
+          return resolve(data);
+        })
+      })
+    });
+  }
+
+  private getProject(address: string): Promise<Project> {
+    return new Promise<Project>((resolve, reject) => {
+      this.contract.getProject(address, (err: any, data: any) => {
+        this.zone.run(() => {
+          if (err)
+            return reject(err);
+          return resolve(new Project(data[0], data[1], data[2], data[3]))
+        })
+      })
+    });
+  }
+
+  getProjects(): Promise<Project[]> {
+    var projects = [];
+    return this.getProjectsCount().then((count) => {
+      return Promise.all(Array.apply(0, new Array(count)).map((value, i) => {
+        return this.getProjectCreator(i).then(address => {
+          return this.getProject(address);
+        });
+      }));
+    });
+  }
+
+  getCurrentProject(): Promise<Project> {
+    return new Promise<Project>((resolve, reject) => {
+      this.contract.getCurrentProject((err: any, data: any) => {
+        this.zone.run(() => {
+          if (err)
+            return reject(err);
+          return data[3] === this.getZeroAddress() ? resolve(null) : resolve(new Project(data[0], data[1], data[2], data[3]));
+        })
+      })
+    });
+  }
+
+  investMoney(project: string, amount: number) {
+    return new Promise<void>((resolve, reject) => {
+      this.contract.invest(this.toWei(amount), project, (err: any, data: any) => {
+        this.zone.run(() => {
+          if (err)
+            return reject(err);
+          return resolve(data);
+        })
+      })
+    });
+  }
+
+  getZeroAddress(): string {
+    return "0x0000000000000000000000000000000000000000";
   }
 
 }
@@ -179,4 +306,28 @@ export class ConnectionStatus {
 export class ContractStatus {
   projectsAllowed: boolean;
   crowdfundStarted: boolean;
+}
+
+export class Investment {
+  amount: number;
+  beneficiary: string;
+
+  constructor(amount: number, beneficiary: string) {
+    this.amount = amount;
+    this.beneficiary = beneficiary;
+  }
+}
+
+export class Project {
+  finalAmount: number;
+  investedAmount: number;
+  profitability: number;
+  creator: string;
+
+  constructor(finalAmount: number, investedAmount: number, profitability: number, creator: string) {
+    this.finalAmount = finalAmount;
+    this.investedAmount = investedAmount;
+    this.profitability = profitability;
+    this.creator = creator;
+  }
 }

@@ -10,12 +10,18 @@ import { NavComponent } from './nav/nav.component';
 import { MoneyComponent } from './money/money.component';
 
 import { ContractService } from './services/contract.service';
+import { ProjectComponent } from './project/project.component';
+import { ProjectsComponent } from './projects/projects.component';
+import { ProposalComponent } from './proposal/proposal.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     NavComponent,
-    MoneyComponent
+    MoneyComponent,
+    ProjectComponent,
+    ProjectsComponent,
+    ProposalComponent
   ],
   imports: [
     BrowserModule,

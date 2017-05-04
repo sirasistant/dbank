@@ -1,9 +1,11 @@
 <app-nav></app-nav>
-<div class="landing">
+<div (window:load)="onWindowLoad()" class="landing">
     <div class="container" *ngIf="account">
         <div class="col-lg-4 col-md-5 col-sm-6">
         <app-money></app-money>
         </div>
-        <div class="col-lg-8 col-md-7 col-sm-6"></div>
+        <div class="col-lg-8 col-md-7 col-sm-6">
+            <app-project></app-project>
+        </div>
     </div>
 </div>

@@ -4,20 +4,24 @@ import { NgForm } from '@angular/forms';
 import { ContractService, ConnectionStatus } from './services/contract.service';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.less']
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.less']
 })
 export class AppComponent {
-     width = 0;
+    width = 0;
     account: String;
 
-    constructor(private contractService: ContractService) {}
+    constructor(private contractService: ContractService) { }
 
 
     ngAfterViewInit() {
         this.proccessConnection(this.contractService.connectionSubject.getValue());
         this.contractService.connectionSubject.subscribe((connection) => this.proccessConnection(connection))
+    }
+
+    onWindowLoad() {
+        this.contractService.prepare();
     }
 
     proccessConnection(status: ConnectionStatus) {

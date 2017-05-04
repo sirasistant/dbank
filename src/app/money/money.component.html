@@ -1,3 +1,32 @@
 <div class="app-money">
-  <canvas baseChart [data]="moneyData" [labels]="moneyLabels" [chartType]="chartType"></canvas>
+  <canvas *ngIf="moneyData[0]!=0||moneyData[1]!=0" baseChart [data]="moneyData" [labels]="moneyLabels" [chartType]="chartType"></canvas>
+  <form>
+    <div class="form-group">
+      <label for="save">Add money</label>
+      <input type="number" name="saveInput" class="form-control" [(ngModel)]="saveAmount" placeholder="Enter amount">
+      <small id="saveHelp" class="form-text text-muted">Save some money in your account</small>
+      <div>
+        <button class="btn btn-primary" (click)="sendMoney()">Add</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="save">Withdraw money</label>
+      <input type="number" name="withdrawInput" class="form-control" [(ngModel)]="withdrawAmount" placeholder="Enter amount">
+      <small id="withdrawHelp" class="form-text text-muted">Withdraw money from your account</small>
+      <div>
+        <button class="btn btn-primary" (click)="withdrawMoney()">Withdraw</button>
+      </div>
+    </div>
+    <div class="form-group" *ngIf="projects.length&&moneyData[1]==0">
+      <label for="save">Invest money</label>
+      <input type="number" name="investnput" class="form-control" [(ngModel)]="investAmount" placeholder="Enter amount">
+      <select name="projectSelect" class="form-control project-select" [(ngModel)]="selectedProject">
+  <option *ngFor="let project of projects;trackBy: creator" [ngValue]="project">{{project.creator}}</option>
+  </select>
+      <small id="investHelp" class="form-text text-muted">Invest part of your money in a project</small>
+      <div>
+        <button class="btn btn-primary" (click)="investMoney()">Invest</button>
+      </div>
+    </div>
+  </form>
 </div>
