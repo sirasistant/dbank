@@ -28,6 +28,7 @@ contract BankContract is mortal {
     event fund(address user, uint amount);
     event withdrawal(address user, uint amount);
     event userInvested(address user,address beneficiary);
+    event projectAdded();
     event statusChange();
     
     address creator;
@@ -67,8 +68,7 @@ contract BankContract is mortal {
     
     function startProposals() isOwnerOfBank(){
         projectsAllowed = true;
-        projects.length = 0;
-        projectsCreators.length = 0;
+        projectCreators.length = 0;
         delete currentProject;
         statusChange();
     }
@@ -139,6 +139,7 @@ contract BankContract is mortal {
             projects[msg.sender].creator = msg.sender;
             projects[msg.sender].profitability = profitability;
             projectCreators.push(msg.sender);
+            projectAdded();
         }else{
             throw;
         }
@@ -153,7 +154,7 @@ contract BankContract is mortal {
             savings[msg.sender] -= amount;
             userInvested(msg.sender,projectCreator);
         }else{
-            trow;
+            throw;
         }
     }
     
@@ -163,10 +164,23 @@ contract BankContract is mortal {
             uint amountToGive = current.amount + current.amount / 100 * currentProject.profitability;
             savings[currentProject.investors[i]]+= amountToGive;
             savings[msg.sender] -= amountToGive;
+            fund(currentProject.investors[i],amountToGive);
             delete bakers[currentProject.investors[i]];
         }
         delete currentProject;
         statusChange();
+    }
+
+
+    function claimFunds() isCrowdfundFinished() {
+        var investment =bakers[msg.sender];
+        if(investment.beneficiary!=currentProject.creator){
+            savings[msg.sender] += investment.amount;
+            fund(msg.sender,investment.amount);
+            delete bakers[msg.sender];
+        }else{
+            throw;
+        }
     }
 
     function getProjectsAllowed() constant returns(bool){
@@ -201,5 +215,6 @@ contract BankContract is mortal {
     function getCurrentProject() constant returns (uint,uint,uint,address){
           return (currentProject.finalAmount,currentProject.investedAmount,currentProject.profitability,currentProject.creator);
     }
+
     
 }

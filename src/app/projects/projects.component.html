@@ -1,4 +1,4 @@
-<div class="projects" *ngIf="projects?.length>0">
+<div class="projects" *ngIf="projects?.length>0&&(status.crowdfundStarted||status.projectsAllowed)">
   <legend>Projects</legend>
   <div class="project" *ngFor="let project of projects">
     <p><span class="name">Creator:</span> {{project.creator}}</p>

@@ -10,6 +10,7 @@
         <button class="btn btn-primary" (click)="sendMoney()">Add</button>
       </div>
     </div>
+    <button class="btn btn-primary btn-block" *ngIf="moneyData[1]!=0&&currentProject?.creator!=investmentTargetAddress&&!status.crowdfundStarted" (click)="claim()">Claim funds</button>
     <div class="form-group">
       <label for="save">Withdraw money</label>
       <input type="number" name="withdrawInput" class="form-control" [(ngModel)]="withdrawAmount" placeholder="Enter amount">

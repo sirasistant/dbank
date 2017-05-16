@@ -28,5 +28,8 @@ export class ProjectComponent implements OnInit {
     })
   }
 
+  toEther(amount:number):number{
+    return this.contractService.toEther(amount);
+  }
 
 }

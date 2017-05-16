@@ -21,6 +21,8 @@ export class MoneyComponent implements OnInit {
 
   public status: ContractStatus;
   public projects: Project[] = [];
+  public currentProject:Project = null;
+  public investmentTargetAddress:String;
 
   constructor(private contractService: ContractService) { }
 
@@ -37,10 +39,12 @@ export class MoneyComponent implements OnInit {
       })
       this.status = this.contractService.statusSubject.getValue();
       this.getProjects();
+      this.getCurrentProject();
       this.contractService.statusSubject.subscribe((status) => {
         this.status = status;
         this.getProjects();
         this.updateData();
+        this.getCurrentProject();
       })
     })
 
@@ -53,6 +57,7 @@ export class MoneyComponent implements OnInit {
       return this.contractService.getInvestment();
     }).then((investment) => {
       money[1] = this.contractService.toEther(investment.amount);
+      this.investmentTargetAddress = investment.beneficiary;
       this.moneyData = money;
       return Promise.resolve();
     });
@@ -72,6 +77,12 @@ export class MoneyComponent implements OnInit {
     }
   }
 
+  getCurrentProject() {
+    this.contractService.getCurrentProject().then(project => {
+      this.currentProject = project;
+    })
+  }
+
   sendMoney() {
     this.contractService.addMoney(this.saveAmount).then((nothing) => {
       this.saveAmount = 0;
@@ -89,6 +100,10 @@ export class MoneyComponent implements OnInit {
       this.selectedProject = null;
       this.investAmount = 0;
     })
+  }
+
+  claim(){
+    this.contractService.claim();
   }
 
 }

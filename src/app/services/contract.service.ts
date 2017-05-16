@@ -18,10 +18,12 @@ export class ContractService {
   investSubject = new BehaviorSubject<String>(null);
   fundSubject = new BehaviorSubject<number>(null);
   withdrawSubject = new BehaviorSubject<number>(null);
+  projectAddedSubject = new BehaviorSubject<any>(null);
 
   addresses = {
     main: "",
-    ropsten: "0xbC2b30C8469cA965a89BB0A64f0A7f4BEcC7D727"
+    ropsten: "",
+    rinkeby:"0x3C9805bFA4B62cd2c31070A70E4279D58AFa2016"
   }
 
   constructor(private _http: Http, private zone: NgZone) {
@@ -34,7 +36,6 @@ export class ContractService {
     }
     return bytes;
   }
-
 
   getNetwork(): Promise<string> {
     return new Promise<string>((resolve, reject) => {
@@ -49,6 +50,9 @@ export class ContractService {
                 break;
               case "0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d":
                 resolve("ropsten")
+                break;
+              case "0x6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177":
+                resolve("rinkeby");
                 break;
               default:
                 reject("Unknown network");
@@ -74,6 +78,12 @@ export class ContractService {
         withdrawal.watch((error: any, event: any) => {
           this.zone.run(() => {
             this.withdrawSubject.next(event.args.amount);
+          });
+        });
+                var projectAdded = this.contract.projectAdded({});
+        projectAdded.watch((error: any, event: any) => {
+          this.zone.run(() => {
+            this.projectAddedSubject.next({});
           });
         });
         var userInvested = this.contract.userInvested({ user: userAccounts[0] });
@@ -297,6 +307,10 @@ export class ContractService {
         })
       })
     });
+  }
+
+  claim(){
+    this.contract.claimFunds(()=>{});
   }
 
   getZeroAddress(): string {

@@ -20,6 +20,9 @@ export class ProjectsComponent implements OnInit {
       this.status = status;
       this.getProjects();
     })
+    this.contractService.projectAddedSubject.subscribe(()=>{
+      this.getProjects();
+    })
   }
 
 
